@@ -76,7 +76,6 @@ body::before {
   margin: 0 auto;
   width: 100%;
   padding-bottom: 80px;
-  /* nav clearance */
 }
 
 /* ─── Bottom Nav ──────────────────────────────────────────── */
@@ -152,6 +151,35 @@ body::before {
 .nav-btn--capture.active:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 24px rgba(196, 130, 74, 0.5);
+}
+
+/* Mobile responsive nav */
+@media (max-width: 480px) {
+  .bottom-nav__inner {
+    gap: 4px;
+    padding: 6px 8px;
+    margin: 0 12px 12px;
+  }
+
+  .nav-btn {
+    font-size: 9px;
+    padding: 6px 12px;
+    gap: 1px;
+  }
+
+  .nav-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .nav-btn--capture {
+    padding: 8px 14px;
+  }
+
+  .nav-btn--capture svg {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 /* ─── Page header ─────────────────────────────────────────── */
@@ -295,6 +323,7 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  position: relative;
 }
 
 .field label {
@@ -343,7 +372,6 @@ body::before {
   font-weight: 300;
 }
 
-/* Title input — display style */
 .field input.title-input {
   font-family: var(--font-display);
   font-size: 1.4rem;
@@ -359,6 +387,31 @@ body::before {
 .field input.title-input:focus {
   border-color: var(--amber);
   box-shadow: none;
+}
+
+.field input.invalid {
+  border-color: rgba(180, 60, 60, 0.5);
+}
+
+.field input.invalid:focus {
+  border-color: rgba(180, 60, 60, 0.7);
+  box-shadow: 0 0 0 3px rgba(180, 60, 60, 0.12);
+}
+
+.field-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+.field-error {
+  display: block;
+  font-size: 12px;
+  color: #e07070;
+  margin-top: 4px;
+  font-weight: 500;
 }
 
 /* ─── Star / number rating ────────────────────────────────── */
@@ -1116,35 +1169,6 @@ body::before {
 
 .auth-toggle-btn:hover {
   color: var(--amber);
-}
-
-.field {
-  position: relative;
-}
-
-.field input.invalid {
-  border-color: rgba(180, 60, 60, 0.5);
-}
-
-.field input.invalid:focus {
-  border-color: rgba(180, 60, 60, 0.7);
-  box-shadow: 0 0 0 3px rgba(180, 60, 60, 0.12);
-}
-
-.field-hint {
-  display: block;
-  font-size: 12px;
-  color: var(--ink-muted);
-  margin-top: 4px;
-  opacity: 0.7;
-}
-
-.field-error {
-  display: block;
-  font-size: 12px;
-  color: #e07070;
-  margin-top: 4px;
-  font-weight: 500;
 }
 
 /* ─── User Menu ────────────────────────────────────────────── */
