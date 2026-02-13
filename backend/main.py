@@ -22,15 +22,18 @@ app.add_middleware(
 
 DB_PATH = os.getenv("DB_PATH", "/data/dreams.db")
 
+
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def init_db():
     Path(DB_PATH).parent.mkdir(parents=True, exist_ok=True)
     conn = get_db()
-    conn.execute("""
+    conn.execute(
+        """
         CREATE TABLE IF NOT EXISTS dreams (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT,
@@ -43,9 +46,11 @@ def init_db():
             created_at TEXT DEFAULT (datetime('now')),
             updated_at TEXT DEFAULT (datetime('now'))
         )
-    """)
+    """
+    )
     conn.commit()
     conn.close()
+
 
 init_db()
 
@@ -216,10 +221,38 @@ def get_stats():
     }
 
 
+@app.get("/api/backup")
+def backup_dreams():
+    """Export all dreams as JSON"""
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM dreams ORDER BY created_at DESC").fetchall()
+    conn.close()
+    dreams = [row_to_dict(r) for r in rows]
+
+    from fastapi.responses import JSONResponse
+    import json
+
+    # Create a backup object with metadata
+    backup = {
+        "export_date": datetime.utcnow().isoformat(),
+        "version": "1.0",
+        "dreams": dreams,
+    }
+
+    return JSONResponse(
+        content=backup,
+        headers={
+            "Content-Disposition": f"attachment; filename=dream-journal-backup-{datetime.utcnow().strftime('%Y%m%d')}.json"
+        },
+    )
+
+
 # Serve React frontend
 frontend_path = Path("/app/frontend/dist")
 if frontend_path.exists():
-    app.mount("/assets", StaticFiles(directory=str(frontend_path / "assets")), name="assets")
+    app.mount(
+        "/assets", StaticFiles(directory=str(frontend_path / "assets")), name="assets"
+    )
 
     @app.get("/{full_path:path}")
     def serve_frontend(full_path: str):

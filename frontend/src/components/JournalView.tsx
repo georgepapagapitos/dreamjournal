@@ -12,11 +12,11 @@ interface JournalViewProps {
 }
 
 export function JournalView({ onSelectDream }: JournalViewProps) {
-  const [dreams, setDreams] = useState < Dream[] > ([])
+  const [dreams, setDreams] = useState<Dream[]>([])
   const [search, setSearch] = useState('')
-  const [moodFilter, setMoodFilter] = useState < string | null > (null)
+  const [moodFilter, setMoodFilter] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState < Stats | null > (null)
+  const [stats, setStats] = useState<Stats | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -41,27 +41,63 @@ export function JournalView({ onSelectDream }: JournalViewProps) {
     return () => clearTimeout(t)
   }, [searchInput])
 
+  const handleBackup = async () => {
+    try {
+      const response = await fetch('/api/backup')
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `dream-journal-backup-${dayjs().format('YYYYMMDD')}.json`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Backup failed:', error)
+    }
+  }
+
   const MOODS = [
     { id: 'peaceful', emoji: '🌙' },
-    { id: 'joyful', emoji: '✨' },
-    { id: 'anxious', emoji: '🌀' },
-    { id: 'eerie', emoji: '🌫️' },
-    { id: 'vivid', emoji: '🔮' },
-    { id: 'neutral', emoji: '🌑' },
+    { id: 'joyful',   emoji: '✨' },
+    { id: 'anxious',  emoji: '🌀' },
+    { id: 'eerie',    emoji: '🌫️' },
+    { id: 'vivid',    emoji: '🔮' },
+    { id: 'neutral',  emoji: '🌑' },
   ]
 
   return (
     <div className="fade-in">
       <div className="page-header">
-        <h1 className="page-title">
-          Your <em>dreams</em>
-        </h1>
-        {stats && (
-          <p className="page-subtitle">
-            {stats.total} {stats.total === 1 ? 'entry' : 'entries'} recorded
-            {stats.avg_lucidity ? ` · avg lucidity ${stats.avg_lucidity}` : ''}
-          </p>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h1 className="page-title">
+              Your <em>dreams</em>
+            </h1>
+            {stats && (
+              <p className="page-subtitle">
+                {stats.total} {stats.total === 1 ? 'entry' : 'entries'} recorded
+                {stats.avg_lucidity ? ` · avg lucidity ${stats.avg_lucidity}` : ''}
+              </p>
+            )}
+          </div>
+          {stats && stats.total > 0 && (
+            <button
+              onClick={handleBackup}
+              className="btn btn--ghost"
+              style={{ padding: '8px 16px', fontSize: '13px' }}
+              title="Download backup as JSON"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '6px' }}>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Backup
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Stats row */}
@@ -84,7 +120,7 @@ export function JournalView({ onSelectDream }: JournalViewProps) {
       <div className="search-bar">
         <span className="search-bar__icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
         </span>
         <input
