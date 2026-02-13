@@ -1,14 +1,30 @@
-import type { Dream, DreamCreate, Stats } from '../types'
+import type { Dream, DreamCreate, Stats, AuthResponse, User } from '../types'
 
 const BASE = '/api'
 
+function getAuthHeader(): Record<string, string> {
+  const token = localStorage.getItem('auth_token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers: { 
+      'Content-Type': 'application/json',
+      ...getAuthHeader(),
+      ...options.headers 
+    },
     ...options,
     body: options.body ? JSON.stringify(options.body) : undefined,
   })
   if (!res.ok) {
+    if (res.status === 401) {
+      // Unauthorized - clear token and redirect to login
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('user')
+      window.location.href = '/login'
+      throw new Error('Unauthorized')
+    }
     const err = await res.text()
     throw new Error(err || `HTTP ${res.status}`)
   }
@@ -25,6 +41,19 @@ interface ListParams {
 }
 
 export const api = {
+  auth: {
+    register: (email: string, username: string, password: string) =>
+      request<AuthResponse>('/auth/register', {
+        method: 'POST',
+        body: { email, username, password } as any,
+      }),
+    login: (email: string, password: string) =>
+      request<AuthResponse>('/auth/login', {
+        method: 'POST',
+        body: { email, password } as any,
+      }),
+    me: () => request<User>('/auth/me'),
+  },
   dreams: {
     list: (params: ListParams = {}) => {
       const q = new URLSearchParams(

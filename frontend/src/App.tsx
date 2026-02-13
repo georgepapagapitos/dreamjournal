@@ -3,8 +3,10 @@ import { CaptureView } from './components/CaptureView'
 import { JournalView } from './components/JournalView'
 import { CalendarView } from './components/CalendarView'
 import { DetailView } from './components/DetailView'
+import { AuthView } from './components/AuthView'
 import { Toast } from './components/Toast'
 import { useToast } from './hooks/useToast'
+import { useAuth } from './contexts/AuthContext'
 import type { Dream } from './types'
 
 const TAB_JOURNAL = 'journal'
@@ -14,6 +16,7 @@ const TAB_CALENDAR = 'calendar'
 type Tab = typeof TAB_JOURNAL | typeof TAB_CAPTURE | typeof TAB_CALENDAR
 
 export default function App() {
+  const { user, loading: authLoading, logout } = useAuth()
   const [tab, setTab] = useState<Tab>(TAB_JOURNAL)
   const [selectedDream, setSelectedDream] = useState<Dream | null>(null)
   const [editDream, setEditDream] = useState<Dream | null>(null)
@@ -62,6 +65,28 @@ export default function App() {
     setTab(TAB_JOURNAL)
   }
 
+  // Show loading spinner while checking auth
+  if (authLoading) {
+    return (
+      <div style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--ink)',
+      }}>
+        <div className="loading">
+          <div className="spinner" /> Loading…
+        </div>
+      </div>
+    )
+  }
+
+  // Show auth page if not logged in
+  if (!user) {
+    return <AuthView />
+  }
+
   return (
     <>
       {/* Background ambient glow */}
@@ -69,6 +94,14 @@ export default function App() {
         position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
         background: 'radial-gradient(ellipse 80% 50% at 20% 10%, rgba(196,130,74,0.06) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 90%, rgba(100,60,30,0.08) 0%, transparent 50%)',
       }} />
+
+      {/* User menu */}
+      <div className="user-menu">
+        <span className="user-menu__name">{user.username}</span>
+        <button className="user-menu__logout" onClick={logout}>
+          Sign out
+        </button>
+      </div>
 
       <div className="app-container" style={{ position: 'relative', zIndex: 1 }}>
         {/* Render active view */}
