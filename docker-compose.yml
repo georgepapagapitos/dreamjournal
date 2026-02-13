@@ -1,18 +1,23 @@
-version: '3.9'
-
 services:
   dreamjournal:
     build: .
     container_name: dreamjournal
     restart: unless-stopped
+    networks:
+      - nginxproxymanager_default
     ports:
-      - "8000:8000"       # Change left side to e.g. 80 or 3000 as needed
+      - "8765:8000"
     volumes:
-      - ./data:/data       # SQLite DB persists here on your host
+      - ./data:/data
     environment:
       - DB_PATH=/data/dreams.db
+      - TZ=America/Chicago
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/stats"]
       interval: 30s
       timeout: 5s
       retries: 3
+
+networks:
+  nginxproxymanager_default:
+    external: true
