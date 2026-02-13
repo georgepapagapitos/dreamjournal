@@ -1,4 +1,4 @@
-import type { Dream, DreamCreate, Stats, AuthResponse, User } from '../types'
+import type { AuthResponse, DetailedStats, Dream, DreamCreate, Stats, User } from '../types'
 
 const BASE = '/api'
 
@@ -74,6 +74,7 @@ export const api = {
   },
   stats: {
     get: () => request<Stats>('/stats'),
+    getDetailed: () => request<DetailedStats>('/stats/detailed'),
   },
   import: async (file: File) => {
     const formData = new FormData()

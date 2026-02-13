@@ -2,7 +2,7 @@
 set -e
 
 # Configuration
-IMAGE_NAME="georgepapagapitos/dreamjournal"  # Your Docker Hub username
+IMAGE_NAME="georgepapagapitos/dreamjournal"
 VERSION="${1:-latest}"
 
 echo "🔨 Building multi-platform image: $IMAGE_NAME:$VERSION"

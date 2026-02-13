@@ -1,4 +1,4 @@
-import { useState, KeyboardEvent } from 'react'
+import { KeyboardEvent, useState } from 'react'
 
 interface TagInputProps {
   tags: string[]

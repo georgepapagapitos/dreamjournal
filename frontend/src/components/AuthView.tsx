@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react'
+import { FormEvent, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 
 export function AuthView() {

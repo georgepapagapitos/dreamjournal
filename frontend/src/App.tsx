@@ -1,20 +1,21 @@
-import { useState, useCallback } from 'react'
-import { CaptureView } from './components/CaptureView'
-import { JournalView } from './components/JournalView'
-import { CalendarView } from './components/CalendarView'
-import { DetailView } from './components/DetailView'
+import { useCallback, useState } from 'react'
 import { AuthView } from './components/AuthView'
+import { CalendarView } from './components/CalendarView'
+import { CaptureView } from './components/CaptureView'
+import { DetailView } from './components/DetailView'
+import { JournalView } from './components/JournalView'
+import { StatsView } from './components/StatsView'
 import { Toast } from './components/Toast'
-import { useToast } from './hooks/useToast'
 import { useAuth } from './contexts/AuthContext'
+import { useToast } from './hooks/useToast'
 import type { Dream } from './types'
 
 const TAB_JOURNAL = 'journal'
 const TAB_CAPTURE = 'capture'
 const TAB_CALENDAR = 'calendar'
+const TAB_STATS = 'stats'
 
-type Tab = typeof TAB_JOURNAL | typeof TAB_CAPTURE | typeof TAB_CALENDAR
-
+type Tab = typeof TAB_JOURNAL | typeof TAB_CAPTURE | typeof TAB_CALENDAR | typeof TAB_STATS
 export default function App() {
   const { user, loading: authLoading, logout } = useAuth()
   const [tab, setTab] = useState<Tab>(TAB_JOURNAL)
@@ -125,6 +126,8 @@ export default function App() {
             key={journalKey}
             onSelectDream={handleSelectDream}
           />
+        ) : tab === TAB_STATS ? (
+          <StatsView key={journalKey} />
         ) : (
           <JournalView
             key={journalKey}
@@ -174,6 +177,40 @@ export default function App() {
                 <line x1="3" y1="10" x2="21" y2="10" />
               </svg>
               Calendar
+            </button>
+
+            <button
+              className={`nav-btn${tab === TAB_CALENDAR ? ' active' : ''}`}
+              onClick={() => {
+                setEditDream(null)
+                setSelectedDream(null)
+                setTab(TAB_CALENDAR)
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              Calendar
+            </button>
+
+            <button
+              className={`nav-btn${tab === TAB_STATS ? ' active' : ''}`}
+              onClick={() => {
+                setEditDream(null)
+                setSelectedDream(null)
+                setTab(TAB_STATS)
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M3 3v18h18" />
+                <path d="M18 17V9" />
+                <path d="M13 17V5" />
+                <path d="M8 17v-3" />
+              </svg>
+              Stats
             </button>
 
           </div>

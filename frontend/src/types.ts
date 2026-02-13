@@ -42,3 +42,13 @@ export interface AuthResponse {
   token_type: string
   user: User
 }
+
+export interface DetailedStats {
+  total_dreams: number
+  dreams_by_month: { month: string; count: number; avg_lucidity: number | null }[]
+  dreams_by_day: { day: string; count: number }[]
+  mood_distribution: { mood: string; count: number }[]
+  top_tags: { tag: string; count: number }[]
+  lucidity_trend: { month: string; avg_lucidity: number }[]
+  current_streak: number
+}

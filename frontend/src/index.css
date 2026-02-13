@@ -1186,3 +1186,60 @@ body::before {
   background: rgba(196, 130, 74, 0.1);
   color: var(--amber-glow);
 }
+
+/* ─── Stats View ──────────────────────────────────────────── */
+.stats-view {
+  padding-bottom: 100px;
+}
+
+.chart-section {
+  margin: 24px 16px;
+  padding: 24px;
+  background: rgba(61, 35, 20, 0.3);
+  border: 1px solid rgba(196, 130, 74, 0.15);
+  border-radius: var(--radius-lg);
+}
+
+.chart-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--parchment);
+  margin-bottom: 20px;
+  letter-spacing: -0.01em;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  padding: 20px;
+}
+
+.tag-cloud-item {
+  font-family: var(--font-display);
+  color: var(--amber-glow);
+  font-weight: 400;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+  cursor: default;
+}
+
+.tag-cloud-item:hover {
+  color: var(--amber);
+  transform: scale(1.05);
+}
+
+.tag-count {
+  font-size: 0.7em;
+  opacity: 0.6;
+  font-family: var(--font-body);
+}
+
+/* Recharts custom styling */
+.recharts-tooltip-wrapper {
+  outline: none;
+}
