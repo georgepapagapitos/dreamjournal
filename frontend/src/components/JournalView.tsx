@@ -60,11 +60,11 @@ export function JournalView({ onSelectDream }: JournalViewProps) {
 
   const MOODS = [
     { id: 'peaceful', emoji: '🌙' },
-    { id: 'joyful',   emoji: '✨' },
-    { id: 'anxious',  emoji: '🌀' },
-    { id: 'eerie',    emoji: '🌫️' },
-    { id: 'vivid',    emoji: '🔮' },
-    { id: 'neutral',  emoji: '🌑' },
+    { id: 'joyful', emoji: '✨' },
+    { id: 'anxious', emoji: '🌀' },
+    { id: 'eerie', emoji: '🌫️' },
+    { id: 'vivid', emoji: '🔮' },
+    { id: 'neutral', emoji: '🌑' },
   ]
 
   return (
@@ -90,9 +90,9 @@ export function JournalView({ onSelectDream }: JournalViewProps) {
               title="Download backup as JSON"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '6px' }}>
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
               Backup
             </button>
@@ -120,7 +120,7 @@ export function JournalView({ onSelectDream }: JournalViewProps) {
       <div className="search-bar">
         <span className="search-bar__icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
           </svg>
         </span>
         <input

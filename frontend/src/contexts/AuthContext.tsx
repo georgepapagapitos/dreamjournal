@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check if user is logged in on mount
     const token = localStorage.getItem('auth_token')
     const storedUser = localStorage.getItem('user')
-    
+
     if (token && storedUser) {
       setUser(JSON.parse(storedUser))
       // Verify token is still valid

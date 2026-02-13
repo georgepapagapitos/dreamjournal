@@ -169,18 +169,16 @@ export function CalendarView({ onSelectDream }: CalendarViewProps) {
                 return (
                   <div
                     key={dIdx}
-                    className={`heatmap-cell${isToday ? ' is-today' : ''}${
-                      isOutOfYear ? ' out-of-year' : ''
-                    }${data ? ' has-dream' : ''}`}
+                    className={`heatmap-cell${isToday ? ' is-today' : ''}${isOutOfYear ? ' out-of-year' : ''
+                      }${data ? ' has-dream' : ''}`}
                     style={{
                       '--intensity': intensity,
                     } as React.CSSProperties}
                     onClick={() => data && handleDayClick(day)}
                     title={
                       data
-                        ? `${day.format('MMM D')}: ${data.dreams.length} dream${
-                            data.dreams.length > 1 ? 's' : ''
-                          }${data.maxLucidity ? ` (lucidity ${data.maxLucidity})` : ''}`
+                        ? `${day.format('MMM D')}: ${data.dreams.length} dream${data.dreams.length > 1 ? 's' : ''
+                        }${data.maxLucidity ? ` (lucidity ${data.maxLucidity})` : ''}`
                         : day.format('MMM D')
                     }
                   />

@@ -9,10 +9,10 @@ function getAuthHeader(): Record<string, string> {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 
+    headers: {
       'Content-Type': 'application/json',
       ...getAuthHeader(),
-      ...options.headers 
+      ...options.headers
     },
     ...options,
     body: options.body ? JSON.stringify(options.body) : undefined,
