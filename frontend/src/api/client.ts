@@ -75,4 +75,30 @@ export const api = {
   stats: {
     get: () => request<Stats>('/stats'),
   },
+  import: async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const token = localStorage.getItem('auth_token')
+    const res = await fetch(`${BASE}/import`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    })
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('user')
+        window.location.href = '/login'
+        throw new Error('Unauthorized')
+      }
+      const err = await res.text()
+      throw new Error(err || `HTTP ${res.status}`)
+    }
+
+    return res.json()
+  },
 }

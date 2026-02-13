@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi import FastAPI, HTTPException, Query, Depends, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
@@ -425,6 +425,85 @@ def backup_dreams(user_id: int = Depends(get_current_user_id)):
             "Content-Disposition": f"attachment; filename=dream-journal-backup-{datetime.utcnow().strftime('%Y%m%d')}.json"
         },
     )
+
+
+@app.post("/api/import")
+async def import_dreams(
+    user_id: int = Depends(get_current_user_id), file: UploadFile = File(...)
+):
+    """Import dreams from JSON backup"""
+    try:
+        # Read and parse JSON
+        content = await file.read()
+        data = json.loads(content)
+
+        # Validate backup format
+        if not isinstance(data, dict) or "dreams" not in data:
+            raise HTTPException(status_code=400, detail="Invalid backup file format")
+
+        dreams_data = data["dreams"]
+        if not isinstance(dreams_data, list):
+            raise HTTPException(status_code=400, detail="Invalid backup file format")
+
+        conn = get_db()
+        imported = 0
+        skipped = 0
+        errors = 0
+
+        for dream in dreams_data:
+            try:
+                # Check if dream already exists (by created_at timestamp)
+                existing = conn.execute(
+                    "SELECT id FROM dreams WHERE user_id = ? AND created_at = ?",
+                    (user_id, dream.get("created_at")),
+                ).fetchone()
+
+                if existing:
+                    skipped += 1
+                    continue
+
+                # Import the dream
+                conn.execute(
+                    """INSERT INTO dreams (user_id, title, body, mood, lucidity, sleep_quality, tags, dream_date, created_at, updated_at)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        user_id,
+                        dream.get("title"),
+                        dream.get("body", ""),
+                        dream.get("mood"),
+                        dream.get("lucidity"),
+                        dream.get("sleep_quality"),
+                        (
+                            dream.get("tags")
+                            if isinstance(dream.get("tags"), str)
+                            else json.dumps(dream.get("tags", []))
+                        ),
+                        dream.get("dream_date"),
+                        dream.get("created_at", datetime.utcnow().isoformat()),
+                        dream.get("updated_at", datetime.utcnow().isoformat()),
+                    ),
+                )
+                imported += 1
+            except Exception as e:
+                print(f"Error importing dream: {e}")
+                errors += 1
+                continue
+
+        conn.commit()
+        conn.close()
+
+        return {
+            "success": True,
+            "imported": imported,
+            "skipped": skipped,
+            "errors": errors,
+            "total": len(dreams_data),
+        }
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON file")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
 
 
 # Serve React frontend
