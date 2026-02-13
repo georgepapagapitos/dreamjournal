@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  dreamjournal:
+    build: .
+    container_name: dreamjournal
+    restart: unless-stopped
+    ports:
+      - "8000:8000"       # Change left side to e.g. 80 or 3000 as needed
+    volumes:
+      - ./data:/data       # SQLite DB persists here on your host
+    environment:
+      - DB_PATH=/data/dreams.db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/stats"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
