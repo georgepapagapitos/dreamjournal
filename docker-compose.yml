@@ -1,6 +1,6 @@
 services:
   dreamjournal:
-    build: .
+    image: georgepapagapitos/dreamjournal:latest  # Replace with your Docker Hub username
     container_name: dreamjournal
     restart: unless-stopped
     networks:
@@ -12,11 +12,6 @@ services:
     environment:
       - DB_PATH=/data/dreams.db
       - TZ=America/Chicago
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/stats"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
 
 networks:
   nginxproxymanager_default:
