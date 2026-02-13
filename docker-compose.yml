@@ -1,6 +1,6 @@
 services:
   dreamjournal:
-    image: georgepapagapitos/dreamjournal:latest  # Replace with your Docker Hub username
+    image: georgepapagapitos/dreamjournal:latest
     container_name: dreamjournal
     restart: unless-stopped
     networks:
