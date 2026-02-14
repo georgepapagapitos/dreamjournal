@@ -4,8 +4,6 @@ import { api } from '../../api/client'
 import type { DetailedStats } from '../../types'
 import { getMood } from '../ui/MoodPicker'
 
-const COLORS = ['#c4824a', '#e8a96e', '#d4a853', '#f0cc7a', '#a06030', '#8a6f47']
-
 export function StatsView() {
     const [stats, setStats] = useState<DetailedStats | null>(null)
     const [loading, setLoading] = useState(true)
@@ -53,6 +51,20 @@ export function StatsView() {
         )
     }
 
+    // Get CSS variables
+    const root = getComputedStyle(document.documentElement)
+    const amber = root.getPropertyValue('--amber').trim()
+    const amberGlow = root.getPropertyValue('--amber-glow').trim()
+    const gold = root.getPropertyValue('--gold').trim()
+    const goldLight = root.getPropertyValue('--gold-light').trim()
+    const amberDeep = root.getPropertyValue('--amber-deep').trim()
+    const inkMuted = root.getPropertyValue('--ink-muted').trim()
+    const amberRgb = root.getPropertyValue('--amber-rgb').trim()
+    const inkSoftRgb = root.getPropertyValue('--ink-soft-rgb').trim()
+    const parchment = root.getPropertyValue('--parchment').trim()
+
+    const CHART_COLORS = [amber, amberGlow, gold, goldLight, amberDeep, inkMuted]
+
     return (
         <div className="fade-in stats-view">
             <div className="page-header">
@@ -94,25 +106,18 @@ export function StatsView() {
                     <h2 className="chart-title">Dreams Over Time</h2>
                     <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={stats.dreams_by_month}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(196, 130, 74, 0.1)" />
-                            <XAxis
-                                dataKey="month"
-                                stroke="#7a5c47"
-                                tick={{ fill: '#7a5c47', fontSize: 12 }}
-                            />
-                            <YAxis
-                                stroke="#7a5c47"
-                                tick={{ fill: '#7a5c47', fontSize: 12 }}
-                            />
+                            <CartesianGrid strokeDasharray="3 3" stroke={`rgba(${amberRgb}, 0.1)`} />
+                            <XAxis dataKey="month" stroke={inkMuted} tick={{ fill: inkMuted, fontSize: 12 }} />
+                            <YAxis stroke={inkMuted} tick={{ fill: inkMuted, fontSize: 12 }} />
                             <Tooltip
                                 contentStyle={{
-                                    background: 'rgba(44, 24, 16, 0.95)',
-                                    border: '1px solid rgba(196, 130, 74, 0.3)',
+                                    background: `rgba(${inkSoftRgb}, 0.95)`,
+                                    border: `1px solid rgba(${amberRgb}, 0.3)`,
                                     borderRadius: '8px',
-                                    color: '#f5ede0'
+                                    color: parchment
                                 }}
                             />
-                            <Bar dataKey="count" fill="#c4824a" radius={[8, 8, 0, 0]} />
+                            <Bar dataKey="count" fill={amber} radius={[8, 8, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -124,31 +129,23 @@ export function StatsView() {
                     <h2 className="chart-title">Lucidity Progression</h2>
                     <ResponsiveContainer width="100%" height={250}>
                         <LineChart data={stats.lucidity_trend}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(196, 130, 74, 0.1)" />
-                            <XAxis
-                                dataKey="month"
-                                stroke="#7a5c47"
-                                tick={{ fill: '#7a5c47', fontSize: 12 }}
-                            />
-                            <YAxis
-                                domain={[0, 5]}
-                                stroke="#7a5c47"
-                                tick={{ fill: '#7a5c47', fontSize: 12 }}
-                            />
+                            <CartesianGrid strokeDasharray="3 3" stroke={`rgba(${amberRgb}, 0.1)`} />
+                            <XAxis dataKey="month" stroke={inkMuted} tick={{ fill: inkMuted, fontSize: 12 }} />
+                            <YAxis domain={[0, 5]} stroke={inkMuted} tick={{ fill: inkMuted, fontSize: 12 }} />
                             <Tooltip
                                 contentStyle={{
-                                    background: 'rgba(44, 24, 16, 0.95)',
-                                    border: '1px solid rgba(196, 130, 74, 0.3)',
+                                    background: `rgba(${inkSoftRgb}, 0.95)`,
+                                    border: `1px solid rgba(${amberRgb}, 0.3)`,
                                     borderRadius: '8px',
-                                    color: '#f5ede0'
+                                    color: parchment
                                 }}
                             />
                             <Line
                                 type="monotone"
                                 dataKey="avg_lucidity"
-                                stroke="#e8a96e"
+                                stroke={amberGlow}
                                 strokeWidth={3}
-                                dot={{ fill: '#c4824a', r: 4 }}
+                                dot={{ fill: amber, r: 4 }}
                             />
                         </LineChart>
                     </ResponsiveContainer>
@@ -161,25 +158,18 @@ export function StatsView() {
                     <h2 className="chart-title">Dreams by Day of Week</h2>
                     <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={stats.dreams_by_day}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(196, 130, 74, 0.1)" />
-                            <XAxis
-                                dataKey="day"
-                                stroke="#7a5c47"
-                                tick={{ fill: '#7a5c47', fontSize: 12 }}
-                            />
-                            <YAxis
-                                stroke="#7a5c47"
-                                tick={{ fill: '#7a5c47', fontSize: 12 }}
-                            />
+                            <CartesianGrid strokeDasharray="3 3" stroke={`rgba(${amberRgb}, 0.1)`} />
+                            <XAxis dataKey="day" stroke={inkMuted} tick={{ fill: inkMuted, fontSize: 12 }} />
+                            <YAxis stroke={inkMuted} tick={{ fill: inkMuted, fontSize: 12 }} />
                             <Tooltip
                                 contentStyle={{
-                                    background: 'rgba(44, 24, 16, 0.95)',
-                                    border: '1px solid rgba(196, 130, 74, 0.3)',
+                                    background: `rgba(${inkSoftRgb}, 0.95)`,
+                                    border: `1px solid rgba(${amberRgb}, 0.3)`,
                                     borderRadius: '8px',
-                                    color: '#f5ede0'
+                                    color: parchment
                                 }}
                             />
-                            <Bar dataKey="count" fill="#d4a853" radius={[8, 8, 0, 0]} />
+                            <Bar dataKey="count" fill={gold} radius={[8, 8, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -205,15 +195,15 @@ export function StatsView() {
                                 labelLine={false}
                             >
                                 {stats.mood_distribution.map((_, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                                 ))}
                             </Pie>
                             <Tooltip
                                 contentStyle={{
-                                    background: 'rgba(44, 24, 16, 0.95)',
-                                    border: '1px solid rgba(196, 130, 74, 0.3)',
+                                    background: `rgba(${inkSoftRgb}, 0.95)`,
+                                    border: `1px solid rgba(${amberRgb}, 0.3)`,
                                     borderRadius: '8px',
-                                    color: '#f5ede0'
+                                    color: parchment
                                 }}
                                 formatter={(value: any, name: string) => {
                                     const moodObj = getMood(name)

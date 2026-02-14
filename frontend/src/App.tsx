@@ -25,6 +25,7 @@ export default function App() {
   const [selectedDream, setSelectedDream] = useState<Dream | null>(null)
   const [editDream, setEditDream] = useState<Dream | null>(null)
   const [journalKey, setJournalKey] = useState(0)
+  const [prefilledDate, setPrefilledDate] = useState<string | null>(null)
   const { toast, showToast } = useToast()
 
   const refreshJournal = useCallback(() => {
@@ -68,6 +69,11 @@ export default function App() {
     setSelectedDream(null)
     setTab(TAB_JOURNAL)
   }
+
+  const handleRecordDream = useCallback((date: string) => {
+    setPrefilledDate(date)
+    setTab(TAB_CAPTURE)
+  }, [])
 
   // Show loading spinner while checking auth
   if (authLoading) {
@@ -137,11 +143,13 @@ export default function App() {
             key={editDream?.id ?? 'new'}
             onSaved={handleSaved}
             editDream={editDream}
+            prefilledDate={prefilledDate}
           />
         ) : tab === TAB_CALENDAR ? (
           <CalendarView
             key={journalKey}
             onSelectDream={handleSelectDream}
+            onRecordDream={handleRecordDream}
           />
         ) : tab === TAB_STATS ? (
           <StatsView key={journalKey} />

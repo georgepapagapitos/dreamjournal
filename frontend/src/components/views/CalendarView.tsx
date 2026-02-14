@@ -1,17 +1,12 @@
-import dayjs, { Dayjs } from 'dayjs'
-import isoWeek from 'dayjs/plugin/isoWeek'
-import weekOfYear from 'dayjs/plugin/weekOfYear'
+import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 import { api } from '../../api/client'
 import type { Dream } from '../../types'
-
-dayjs.extend(isoWeek)
-dayjs.extend(weekOfYear)
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+import { getMood } from '../ui/MoodPicker'
 
 interface CalendarViewProps {
   onSelectDream: (dream: Dream) => void
+  onRecordDream: (date: string) => void
 }
 
 interface DayData {
@@ -19,10 +14,12 @@ interface DayData {
   maxLucidity: number
 }
 
-export function CalendarView({ onSelectDream }: CalendarViewProps) {
+export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps) {
   const [dreams, setDreams] = useState<Dream[]>([])
   const [loading, setLoading] = useState(true)
-  const [year, setYear] = useState(new Date().getFullYear())
+  const [currentMonth, setCurrentMonth] = useState(dayjs())
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [isClosing, setIsClosing] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -50,53 +47,43 @@ export function CalendarView({ onSelectDream }: CalendarViewProps) {
     }
   })
 
-  // Generate a full year grid (GitHub-style: weeks as columns, days as rows)
-  const startOfYear = dayjs(`${year}-01-01`)
-  const endOfYear = dayjs(`${year}-12-31`)
+  // Generate calendar grid for current month
+  const startOfMonth = currentMonth.startOf('month')
+  const endOfMonth = currentMonth.endOf('month')
+  const startDate = startOfMonth.startOf('week') // Start on Sunday
+  const endDate = endOfMonth.endOf('week')
 
-  // Start from the first Sunday on or before Jan 1
-  let currentDay = startOfYear.startOf('week')
-  const weeks: Dayjs[][] = []
-
-  while (currentDay.isBefore(endOfYear) || currentDay.isSame(endOfYear, 'day')) {
-    const week: Dayjs[] = []
-    for (let i = 0; i < 7; i++) {
-      week.push(currentDay)
-      currentDay = currentDay.add(1, 'day')
-    }
-    weeks.push(week)
+  const calendar: dayjs.Dayjs[] = []
+  let day = startDate
+  while (day.isBefore(endDate) || day.isSame(endDate, 'day')) {
+    calendar.push(day)
+    day = day.add(1, 'day')
   }
 
-  // Calculate month label positions (which week column each month starts)
-  const monthPositions: { month: number; weekIndex: number }[] = []
-  let lastMonth = -1
-  weeks.forEach((week, idx) => {
-    const monthOfFirstDay = week[0].month()
-    if (monthOfFirstDay !== lastMonth && week[0].year() === year) {
-      monthPositions.push({ month: monthOfFirstDay, weekIndex: idx })
-      lastMonth = monthOfFirstDay
-    }
-  })
+  // Chunk into weeks
+  const weeks: dayjs.Dayjs[][] = []
+  for (let i = 0; i < calendar.length; i += 7) {
+    weeks.push(calendar.slice(i, i + 7))
+  }
 
-  const getCellIntensity = (day: Dayjs): number => {
-    if (!day.isSame(dayjs(), 'year') && day.year() !== year) return 0
+  const handlePrevMonth = () => setCurrentMonth(currentMonth.subtract(1, 'month'))
+  const handleNextMonth = () => setCurrentMonth(currentMonth.add(1, 'month'))
+  const handleToday = () => setCurrentMonth(dayjs())
+
+  const handleDayClick = (day: dayjs.Dayjs) => {
     const key = day.format('YYYY-MM-DD')
-    const data = dreamsByDate[key]
-    if (!data) return 0
-
-    // Base intensity: recorded = 1
-    // Lucidity boost: +0.15 per lucidity point (max +0.75 for lucidity 5)
-    const boost = data.maxLucidity ? data.maxLucidity * 0.15 : 0
-    return Math.min(1 + boost, 1.75) // cap at 1.75
+    setSelectedDate(key)
   }
 
-  const handleDayClick = (day: Dayjs) => {
-    const key = day.format('YYYY-MM-DD')
-    const data = dreamsByDate[key]
-    if (data && data.dreams.length >= 1) {
-      onSelectDream(data.dreams[0])
-    }
+  const handleClosePanel = () => {
+    setIsClosing(true)
+    setTimeout(() => {
+      setSelectedDate(null)
+      setIsClosing(false)
+    }, 300)
   }
+
+  const selectedDreams = selectedDate ? dreamsByDate[selectedDate]?.dreams || [] : []
 
   if (loading) {
     return (
@@ -112,93 +99,152 @@ export function CalendarView({ onSelectDream }: CalendarViewProps) {
   }
 
   return (
-    <div className="fade-in">
+    <div className="fade-in calendar-view">
       <div className="page-header">
         <h1 className="page-title">
           Dream <em>Calendar</em>
         </h1>
         <p className="page-subtitle">
-          {Object.keys(dreamsByDate).length} days recorded in {year}
+          {Object.keys(dreamsByDate).length} days recorded
         </p>
       </div>
 
-      {/* Year selector */}
-      <div className="year-selector">
-        <button onClick={() => setYear((y) => y - 1)}>‹</button>
-        <span>{year}</span>
-        <button onClick={() => setYear((y) => y + 1)}>›</button>
+      {/* Month navigation */}
+      <div className="calendar-nav">
+        <button onClick={handlePrevMonth} className="calendar-nav__btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        <div className="calendar-nav__current">
+          <h2 className="calendar-nav__month">{currentMonth.format('MMMM YYYY')}</h2>
+          <button onClick={handleToday} className="calendar-nav__today">Today</button>
+        </div>
+        <button onClick={handleNextMonth} className="calendar-nav__btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
       </div>
 
-      {/* Heatmap */}
-      <div className="heatmap-container">
-        {/* Month labels */}
-        <div className="heatmap-months">
-          {monthPositions.map(({ month, weekIndex }) => (
-            <div
-              key={month}
-              className="month-label"
-              style={{ left: `${weekIndex * 14 + 40}px` }}
-            >
-              {MONTHS[month]}
+      {/* Calendar grid */}
+      <div className="calendar-grid">
+        {/* Day headers */}
+        <div className="calendar-header">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+            <div key={day} className="calendar-header__day">
+              {day}
             </div>
           ))}
         </div>
 
-        {/* Day labels */}
-        <div className="heatmap-days">
-          <div>Sun</div>
-          <div>Mon</div>
-          <div>Tue</div>
-          <div>Wed</div>
-          <div>Thu</div>
-          <div>Fri</div>
-          <div>Sat</div>
-        </div>
-
-        {/* Grid */}
-        <div className="heatmap-grid">
+        {/* Weeks and days */}
+        <div className="calendar-body">
           {weeks.map((week, wIdx) => (
-            <div key={wIdx} className="heatmap-week">
-              {week.map((day, dIdx) => {
-                const intensity = getCellIntensity(day)
-                const isToday = day.isSame(dayjs(), 'day')
-                const isOutOfYear = day.year() !== year
+            <div key={wIdx} className="calendar-week">
+              {week.map((day) => {
                 const key = day.format('YYYY-MM-DD')
                 const data = dreamsByDate[key]
+                const isToday = day.isSame(dayjs(), 'day')
+                const isCurrentMonth = day.month() === currentMonth.month()
+                const isSelected = selectedDate === key
+                const dreamCount = data?.dreams.length || 0
 
                 return (
                   <div
-                    key={dIdx}
-                    className={`heatmap-cell${isToday ? ' is-today' : ''}${isOutOfYear ? ' out-of-year' : ''
-                      }${data ? ' has-dream' : ''}`}
-                    style={{
-                      '--intensity': intensity,
-                    } as React.CSSProperties}
-                    onClick={() => data && handleDayClick(day)}
-                    title={
-                      data
-                        ? `${day.format('MMM D')}: ${data.dreams.length} dream${data.dreams.length > 1 ? 's' : ''
-                        }${data.maxLucidity ? ` (lucidity ${data.maxLucidity})` : ''}`
-                        : day.format('MMM D')
-                    }
-                  />
+                    key={key}
+                    className={`calendar-day${!isCurrentMonth ? ' calendar-day--other-month' : ''}${isToday ? ' calendar-day--today' : ''
+                      }${isSelected ? ' calendar-day--selected' : ''}${data ? ' calendar-day--has-dreams' : ''
+                      }`}
+                    onClick={() => handleDayClick(day)}
+                  >
+                    <div className="calendar-day__number">{day.date()}</div>
+                    {data && (
+                      <div className="calendar-day__indicator">
+                        {dreamCount > 1 ? (
+                          <span className="calendar-day__count">{dreamCount}</span>
+                        ) : (
+                          <div
+                            className="calendar-day__dot"
+                            style={{
+                              opacity: data.maxLucidity ? 0.4 + (data.maxLucidity / 5) * 0.6 : 0.6,
+                            }}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )
               })}
             </div>
           ))}
         </div>
-
-        {/* Legend */}
-        <div className="heatmap-legend">
-          <span>Less</span>
-          <div className="legend-cell" style={{ '--intensity': 0 } as React.CSSProperties} />
-          <div className="legend-cell" style={{ '--intensity': 1 } as React.CSSProperties} />
-          <div className="legend-cell" style={{ '--intensity': 1.3 } as React.CSSProperties} />
-          <div className="legend-cell" style={{ '--intensity': 1.6 } as React.CSSProperties} />
-          <div className="legend-cell" style={{ '--intensity': 1.75 } as React.CSSProperties} />
-          <span>More</span>
-        </div>
       </div>
+
+      {/* Selected day dreams panel */}
+      {selectedDate && (
+        <>
+          <div className="calendar-backdrop" onClick={handleClosePanel} />
+          <div className={`calendar-panel${isClosing ? ' calendar-panel--closing' : ''}`}>
+            <div className="calendar-panel__header">
+              <h3 className="calendar-panel__title">
+                {dayjs(selectedDate).format('MMMM D, YYYY')}
+              </h3>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  onClick={() => {
+                    handleClosePanel()
+                    onRecordDream(selectedDate!)
+                  }}
+                  className="btn btn--ghost"
+                  style={{ padding: '6px 12px', fontSize: '12px' }}
+                >
+                  + Record
+                </button>
+                <button onClick={handleClosePanel} className="calendar-panel__close">
+                  ✕
+                </button>
+              </div>
+            </div>
+            {selectedDreams.length === 0 ? (
+              <div className="calendar-panel__empty">No dreams recorded</div>
+            ) : (
+              <div className="calendar-panel__dreams">
+                {selectedDreams.map((dream) => {
+                  const mood = getMood(dream.mood)
+                  return (
+                    <div
+                      key={dream.id}
+                      className="calendar-dream-card"
+                      onClick={() => onSelectDream(dream)}
+                    >
+                      <div className="calendar-dream-card__title">
+                        {dream.title || 'Untitled dream'}
+                      </div>
+                      <div className="calendar-dream-card__preview">
+                        {dream.body.slice(0, 80)}
+                        {dream.body.length > 80 ? '...' : ''}
+                      </div>
+                      <div className="calendar-dream-card__meta">
+                        {mood && (
+                          <span className="chip chip--mood">
+                            {mood.emoji} {mood.label}
+                          </span>
+                        )}
+                        {dream.lucidity && (
+                          <span className="chip chip--lucid">
+                            ◈ {dream.lucidity}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   )
 }

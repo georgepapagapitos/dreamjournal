@@ -2,6 +2,42 @@ import dayjs from 'dayjs'
 import { FormEvent, useState } from 'react'
 import { api } from '../../api/client'
 import { useAuth } from '../../contexts/AuthContext'
+import { useTheme } from '../../contexts/ThemeContext'
+import { themes } from '../../themes'
+
+
+function ThemePicker() {
+    const { currentTheme, setTheme } = useTheme()
+
+    return (
+        <div style={{ display: 'grid', gap: '12px', marginTop: '16px' }}>
+            {themes.map((theme) => (
+                <button
+                    key={theme.id}
+                    onClick={() => setTheme(theme.id)}
+                    className={`theme-option${currentTheme === theme.id ? ' theme-option--active' : ''}`}
+                    style={{
+                        '--theme-accent': theme.colors.accent,
+                        '--theme-glow': theme.colors.accentGlow,
+                    } as React.CSSProperties}
+                >
+                    <div className="theme-option__preview">
+                        <div className="theme-option__dot" style={{ background: theme.colors.accent }} />
+                        <div className="theme-option__dot" style={{ background: theme.colors.accentGlow }} />
+                        <div className="theme-option__dot" style={{ background: theme.colors.gold }} />
+                    </div>
+                    <div className="theme-option__info">
+                        <div className="theme-option__name">{theme.name}</div>
+                        <div className="theme-option__description">{theme.description}</div>
+                    </div>
+                    {currentTheme === theme.id && (
+                        <div className="theme-option__check">✓</div>
+                    )}
+                </button>
+            ))}
+        </div>
+    )
+}
 
 export function SettingsView() {
     const { user, logout } = useAuth()
@@ -163,6 +199,15 @@ export function SettingsView() {
                             </div>
                         )}
                     </div>
+                </section>
+
+                {/* Theme Selection */}
+                <section className="settings-section">
+                    <h2 className="settings-section-title">Appearance</h2>
+                    <p className="settings-section-description">
+                        Choose a color palette for your journal
+                    </p>
+                    <ThemePicker />
                 </section>
 
                 {/* Backup & Import */}

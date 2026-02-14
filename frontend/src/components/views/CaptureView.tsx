@@ -12,9 +12,10 @@ const SLEEP_LABELS = ['Poor', 'Fair', 'Good', 'Great', 'Deep']
 interface CaptureViewProps {
   onSaved: () => void
   editDream?: Dream | null
+  prefilledDate?: string | null
 }
 
-export function CaptureView({ onSaved, editDream }: CaptureViewProps) {
+export function CaptureView({ onSaved, editDream, prefilledDate }: CaptureViewProps) {
   const isEdit = !!editDream
 
   const [form, setForm] = useState({
@@ -24,7 +25,7 @@ export function CaptureView({ onSaved, editDream }: CaptureViewProps) {
     lucidity: editDream?.lucidity ?? null,
     sleep_quality: editDream?.sleep_quality ?? null,
     tags: editDream?.tags ?? [],
-    dream_date: editDream?.dream_date ?? dayjs().format('YYYY-MM-DD'),
+    dream_date: editDream?.dream_date ?? prefilledDate ?? dayjs().format('YYYY-MM-DD'),
   })
 
   const [showMeta, setShowMeta] = useState(isEdit || false)
@@ -61,7 +62,7 @@ export function CaptureView({ onSaved, editDream }: CaptureViewProps) {
           {isEdit ? 'Edit dream' : <>Capture a <em>dream</em></>}
         </h1>
         <p className="page-subtitle">
-          {isEdit ? 'Update your entry' : 'Write while it\'s still fresh'}
+          {isEdit ? 'Update your entry' : prefilledDate ? `Recording for ${dayjs(prefilledDate).format('MMMM D, YYYY')}` : 'Write while it\'s still fresh'}
         </p>
       </div>
 
