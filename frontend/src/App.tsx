@@ -152,7 +152,6 @@ export default function App() {
             <JournalView
               key={journalKey}
               onSelectDream={handleSelectDream}
-              showToast={showToast}
             />
           )}
       </div>
