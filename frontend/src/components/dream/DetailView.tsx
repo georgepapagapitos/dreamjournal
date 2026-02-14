@@ -1,8 +1,8 @@
 import dayjs from 'dayjs'
 import { useState } from 'react'
-import { api } from '../api/client'
-import type { Dream } from '../types'
-import { getMood } from './MoodPicker'
+import { api } from '../../api/client'
+import type { Dream } from '../../types'
+import { getMood } from '../ui/MoodPicker'
 
 const LUCIDITY_LABELS = ['Hazy', 'Dim', 'Clear', 'Vivid', 'Lucid']
 const SLEEP_LABELS = ['Poor', 'Fair', 'Good', 'Great', 'Deep']

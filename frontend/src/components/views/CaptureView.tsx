@@ -1,10 +1,10 @@
 import dayjs from 'dayjs'
 import { FormEvent, useState } from 'react'
-import { api } from '../api/client'
-import type { Dream } from '../types'
-import { MoodPicker } from './MoodPicker'
-import { RatingPicker } from './RatingPicker'
-import { TagInput } from './TagInput'
+import { api } from '../../api/client'
+import type { Dream } from '../../types'
+import { MoodPicker } from '../ui/MoodPicker'
+import { RatingPicker } from '../ui/RatingPicker'
+import { TagInput } from '../ui/TagInput'
 
 const LUCIDITY_LABELS = ['Hazy', 'Dim', 'Clear', 'Vivid', 'Lucid']
 const SLEEP_LABELS = ['Poor', 'Fair', 'Good', 'Great', 'Deep']

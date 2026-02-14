@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react'
-import { useAuth } from '../contexts/AuthContext'
-import { api } from '../api/client'
+import { useAuth } from '../../contexts/AuthContext'
+import { api } from '../../api/client'
 
 export function SettingsView() {
     const { user, logout } = useAuth()

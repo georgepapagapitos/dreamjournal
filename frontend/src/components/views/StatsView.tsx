@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { api } from '../api/client'
-import type { DetailedStats } from '../types'
-import { getMood } from './MoodPicker'
+import { api } from '../../api/client'
+import type { DetailedStats } from '../../types'
+import { getMood } from '../ui/MoodPicker'
 
 const COLORS = ['#c4824a', '#e8a96e', '#d4a853', '#f0cc7a', '#a06030', '#8a6f47']
 
