@@ -1,29 +1,56 @@
 # 🌙 Dream Journal
 
-A personal dream journal — mobile-optimized, self-hosted, beautifully designed.
-Built with React + Vite (frontend) and FastAPI + SQLite (backend), packaged as a single Docker container.
+A personal dream journal with multi-user support — mobile-optimized, self-hosted, beautifully designed.
+
+Built with React 18 + Vite (TypeScript frontend) and FastAPI + SQLite (backend), packaged as a single Docker container.
 
 ---
 
-## Quick Start
+## Features
+
+✨ **Multi-user authentication** - Secure registration and login  
+📝 **Rich dream capture** - Title, body, mood, lucidity, sleep quality, tags  
+🔍 **Search & filter** - Find dreams by keywords, tags, or mood  
+📅 **Calendar heatmap** - Visualize your dream frequency and lucidity over time  
+📊 **Statistics dashboard** - Charts, trends, and insights  
+💾 **Backup & restore** - Export/import dreams as JSON  
+🎨 **Beautiful design** - Warm amber aesthetic with noise texture  
+📱 **PWA ready** - Install on mobile home screen  
+
+---
+
+## Quick Start (Production)
 
 ### Prerequisites
-- Docker & Docker Compose installed on your Linux machine
+- Docker & Docker Compose installed
+- (Optional) Nginx Proxy Manager or reverse proxy for HTTPS
 
-### 1. Clone / copy this project
-
+### 1. Pull the pre-built image
 ```bash
-git clone <your-repo> dreamjournal
-cd dreamjournal
+# Create project directory
+mkdir dreamjournal && cd dreamjournal
+
+# Create docker-compose.yml
+cat > docker-compose.yml << 'EOF'
+services:
+  dreamjournal:
+    image: georgepapagapitos/dreamjournal:latest
+    container_name: dreamjournal
+    restart: unless-stopped
+    ports:
+      - "8765:8000"
+    volumes:
+      - ./data:/data
+    environment:
+      - DB_PATH=/data/dreams.db
+      - TZ=America/Chicago
+EOF
+
+# Start the container
+docker compose up -d
 ```
 
-### 2. Build and run
-
-```bash
-docker compose up -d --build
-```
-
-The app will be available at **http://localhost:8000**
+The app will be available at **http://localhost:8765**
 
 Your dream data is stored in `./data/dreams.db` on your host machine — it persists across container rebuilds.
 
@@ -32,15 +59,17 @@ Your dream data is stored in `./data/dreams.db` on your host machine — it pers
 ## Local Development
 
 ### Backend (FastAPI)
-
 ```bash
 cd backend
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-DB_PATH=../data/dreams.db uvicorn main:app --reload --port 8000
+
+# Run from project root
+DB_PATH=./data/dreams.db uvicorn backend.main:app --reload --port 8000
 ```
 
 ### Frontend (React + Vite)
-
 ```bash
 cd frontend
 npm install
@@ -51,7 +80,23 @@ The Vite dev server proxies `/api/*` to the backend automatically.
 
 ---
 
-## Add to your phone home screen (PWA)
+## Building & Deploying Your Own Image
+
+### Build multi-platform image
+```bash
+# Create buildx builder
+docker buildx create --name multiplatform --use
+docker buildx inspect --bootstrap
+
+# Build and push
+./scripts/build-and-push.sh
+```
+
+This builds for both AMD64 (typical servers) and ARM64 (Mac Silicon, Raspberry Pi).
+
+---
+
+## Add to Your Phone Home Screen (PWA)
 
 1. Open the app in Safari (iOS) or Chrome (Android)
 2. Tap **Share → Add to Home Screen** (iOS) or the install prompt (Android)
@@ -61,44 +106,37 @@ The Vite dev server proxies `/api/*` to the backend automatically.
 
 ## Configuration
 
-Edit `docker-compose.yml` to change the port:
+### Change Port
 
+Edit `docker-compose.yml`:
 ```yaml
 ports:
   - "80:8000"   # serve on port 80 instead
 ```
 
-### HTTPS with nginx (recommended for LAN use)
+### HTTPS with Nginx Proxy Manager (Recommended)
 
-If you want HTTPS (needed for PWA install on some browsers), put nginx in front:
-
-```nginx
-server {
-    listen 443 ssl;
-    server_name dreams.local;
-
-    ssl_certificate     /etc/ssl/certs/dreams.crt;
-    ssl_certificate_key /etc/ssl/private/dreams.key;
-
-    location / {
-        proxy_pass http://localhost:8000;
-        proxy_set_header Host $host;
-    }
-}
-```
+1. Set up Nginx Proxy Manager
+2. Add proxy host pointing to your dreamjournal container (port 8765)
+3. Enable SSL with Let's Encrypt
+4. Access via https://dreams.yourdomain.com
 
 ---
 
 ## Data Backup
 
-Your SQLite database lives at `./data/dreams.db`. Back it up with:
+### App Built-in Export
 
+Click **Backup** button in the Journal view to download all dreams as JSON.
+
+### Database Backup
+
+Your SQLite database lives at `./data/dreams.db`. Back it up with:
 ```bash
 cp ./data/dreams.db ./backups/dreams-$(date +%Y%m%d).db
 ```
 
 Or add a cron job:
-
 ```cron
 0 3 * * * cp /path/to/dreamjournal/data/dreams.db /path/to/backups/dreams-$(date +\%Y\%m\%d).db
 ```
@@ -109,6 +147,19 @@ Or add a cron job:
 
 The REST API is available at `/api`:
 
+### Auth Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/auth/register` | Create new account |
+| POST | `/api/auth/login` | Login and get JWT token |
+| GET | `/api/auth/me` | Get current user info |
+| PUT | `/api/auth/change-password` | Change password |
+| PUT | `/api/auth/change-username` | Change username |
+| DELETE | `/api/auth/delete-account` | Delete account |
+
+### Dream Endpoints (Protected)
+
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/dreams` | List dreams (supports `search`, `mood`, `tag` params) |
@@ -118,14 +169,24 @@ The REST API is available at `/api`:
 | DELETE | `/api/dreams/{id}` | Delete a dream |
 | GET | `/api/tags` | List all used tags |
 | GET | `/api/stats` | Get journal stats |
+| GET | `/api/stats/detailed` | Get detailed stats for dashboard |
+| GET | `/api/backup` | Export all dreams as JSON |
+| POST | `/api/import` | Import dreams from JSON backup |
 
-Interactive API docs: **http://localhost:8000/docs**
+Interactive API docs: **http://localhost:8765/docs**
 
 ---
 
 ## Tech Stack
 
-- **Frontend**: React 18, Vite, React Router, Lucide icons, Day.js
-- **Backend**: FastAPI, SQLite (via Python stdlib), Uvicorn
+- **Frontend**: React 18, TypeScript, Vite, React Router, Recharts, Day.js
+- **Backend**: FastAPI, SQLite, Passlib (bcrypt), Python-Jose (JWT)
+- **Auth**: JWT tokens with bcrypt password hashing
 - **Fonts**: Cormorant Garamond (display) + DM Sans (body)
-- **Container**: Single multi-stage Docker build
+- **Container**: Multi-stage Docker build with multi-platform support
+
+---
+
+## License
+
+MIT

@@ -53,6 +53,20 @@ export const api = {
         body: { email, password } as any,
       }),
     me: () => request<User>('/auth/me'),
+    changePassword: (currentPassword: string, newPassword: string) =>
+      request<{ success: boolean; message: string }>('/auth/change-password', {
+        method: 'PUT',
+        body: { current_password: currentPassword, new_password: newPassword } as any,
+      }),
+    changeUsername: (username: string) =>
+      request<User>('/auth/change-username', {
+        method: 'PUT',
+        body: { username } as any,
+      }),
+    deleteAccount: () =>
+      request<{ success: boolean; message: string }>('/auth/delete-account', {
+        method: 'DELETE',
+      }),
   },
   dreams: {
     list: (params: ListParams = {}) => {

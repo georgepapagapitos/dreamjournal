@@ -238,6 +238,99 @@ def get_current_user(user_id: int = Depends(get_current_user_id)):
     return row_to_dict(user)
 
 
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class UsernameChange(BaseModel):
+    username: str
+
+
+@app.put("/api/auth/change-password")
+def change_password(data: PasswordChange, user_id: int = Depends(get_current_user_id)):
+    conn = get_db()
+    user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+
+    if not user or not verify_password(data.current_password, user["password_hash"]):
+        conn.close()
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+
+    if len(data.new_password) < 8:
+        conn.close()
+        raise HTTPException(
+            status_code=400, detail="New password must be at least 8 characters"
+        )
+
+    new_hash = get_password_hash(data.new_password)
+    now = datetime.utcnow().isoformat()
+
+    conn.execute(
+        "UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?",
+        (new_hash, now, user_id),
+    )
+    conn.commit()
+    conn.close()
+
+    return {"success": True, "message": "Password changed successfully"}
+
+
+@app.put("/api/auth/change-username")
+def change_username(data: UsernameChange, user_id: int = Depends(get_current_user_id)):
+    conn = get_db()
+
+    # Validate username
+    if (
+        not data.username.replace("_", "").replace("-", "").isalnum()
+        or len(data.username) < 3
+        or len(data.username) > 20
+    ):
+        conn.close()
+        raise HTTPException(
+            status_code=400,
+            detail="Username must be 3-20 characters, alphanumeric with _ or - only",
+        )
+
+    # Check if username is taken
+    existing = conn.execute(
+        "SELECT id FROM users WHERE username = ? AND id != ?", (data.username, user_id)
+    ).fetchone()
+    if existing:
+        conn.close()
+        raise HTTPException(status_code=400, detail="Username already taken")
+
+    now = datetime.utcnow().isoformat()
+    conn.execute(
+        "UPDATE users SET username = ?, updated_at = ? WHERE id = ?",
+        (data.username, now, user_id),
+    )
+    conn.commit()
+
+    # Get updated user
+    user = conn.execute(
+        "SELECT id, email, username, created_at FROM users WHERE id = ?", (user_id,)
+    ).fetchone()
+    conn.close()
+
+    return row_to_dict(user)
+
+
+@app.delete("/api/auth/delete-account")
+def delete_account(user_id: int = Depends(get_current_user_id)):
+    conn = get_db()
+
+    # Delete all user's dreams first (cascade should handle this, but being explicit)
+    conn.execute("DELETE FROM dreams WHERE user_id = ?", (user_id,))
+
+    # Delete user
+    conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+
+    conn.commit()
+    conn.close()
+
+    return {"success": True, "message": "Account deleted successfully"}
+
+
 # ============================================================================
 # Dream Endpoints (Protected)
 # ============================================================================

@@ -9,13 +9,16 @@ import { Toast } from './components/Toast'
 import { useAuth } from './contexts/AuthContext'
 import { useToast } from './hooks/useToast'
 import type { Dream } from './types'
+import { SettingsView } from './components/SettingsView'
 
 const TAB_JOURNAL = 'journal'
 const TAB_CAPTURE = 'capture'
 const TAB_CALENDAR = 'calendar'
 const TAB_STATS = 'stats'
+const TAB_SETTINGS = 'settings'
 
-type Tab = typeof TAB_JOURNAL | typeof TAB_CAPTURE | typeof TAB_CALENDAR | typeof TAB_STATS
+type Tab = typeof TAB_JOURNAL | typeof TAB_CAPTURE | typeof TAB_CALENDAR | typeof TAB_STATS | typeof TAB_SETTINGS
+
 export default function App() {
   const { user, loading: authLoading, logout } = useAuth()
   const [tab, setTab] = useState<Tab>(TAB_JOURNAL)
@@ -99,6 +102,20 @@ export default function App() {
       {/* User menu */}
       <div className="user-menu">
         <span className="user-menu__name">{user.username}</span>
+        <button
+          className="user-menu__btn"
+          onClick={() => {
+            setEditDream(null)
+            setSelectedDream(null)
+            setTab(TAB_SETTINGS)
+          }}
+          title="Settings"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
         <button className="user-menu__logout" onClick={logout}>
           Sign out
         </button>
@@ -128,12 +145,15 @@ export default function App() {
           />
         ) : tab === TAB_STATS ? (
           <StatsView key={journalKey} />
-        ) : (
-          <JournalView
-            key={journalKey}
-            onSelectDream={handleSelectDream}
-          />
-        )}
+        ) :
+          tab === TAB_SETTINGS ? (
+            <SettingsView key={journalKey} />
+          ) : (
+            <JournalView
+              key={journalKey}
+              onSelectDream={handleSelectDream}
+            />
+          )}
       </div>
 
       {/* Bottom navigation */}
