@@ -116,4 +116,26 @@ export const api = {
 
     return res.json()
   },
+  backup: async () => {
+    const token = localStorage.getItem('auth_token')
+    const res = await fetch(`${BASE}/backup`, {
+      method: 'GET',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    })
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('user')
+        window.location.href = '/login'
+        throw new Error('Unauthorized')
+      }
+      const err = await res.text()
+      throw new Error(err || `HTTP ${res.status}`)
+    }
+
+    return res.json()
+  },
 }

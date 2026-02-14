@@ -9,9 +9,10 @@ dayjs.extend(relativeTime)
 
 interface JournalViewProps {
   onSelectDream: (dream: Dream) => void
+  showToast: (message: string, duration?: number) => void
 }
 
-export function JournalView({ onSelectDream }: JournalViewProps) {
+export function JournalView({ onSelectDream, showToast }: JournalViewProps) {
   const [dreams, setDreams] = useState<Dream[]>([])
   const [search, setSearch] = useState('')
   const [moodFilter, setMoodFilter] = useState<string | null>(null)
@@ -43,7 +44,17 @@ export function JournalView({ onSelectDream }: JournalViewProps) {
 
   const handleBackup = async () => {
     try {
-      const response = await fetch('/api/backup')
+      const token = localStorage.getItem('auth_token')
+      const response = await fetch('/api/backup', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Backup failed')
+      }
+
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -53,8 +64,11 @@ export function JournalView({ onSelectDream }: JournalViewProps) {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
+
+      showToast(`✨ Exported ${dreams.length} dream${dreams.length !== 1 ? 's' : ''}`)
     } catch (error) {
       console.error('Backup failed:', error)
+      showToast('❌ Export failed')
     }
   }
 
@@ -69,9 +83,9 @@ export function JournalView({ onSelectDream }: JournalViewProps) {
       try {
         const result = await api.import(file)
         load() // Reload dreams
-        alert(`Import complete!\n\nImported: ${result.imported}\nSkipped (duplicates): ${result.skipped}\nErrors: ${result.errors}`)
+        showToast(`✨ Imported ${result.imported} dream${result.imported !== 1 ? 's' : ''}${result.skipped > 0 ? ` · Skipped ${result.skipped}` : ''}`)
       } catch (error: any) {
-        alert(`Import failed: ${error.message}`)
+        showToast(`❌ Import failed: ${error.message}`)
       }
     }
     input.click()
