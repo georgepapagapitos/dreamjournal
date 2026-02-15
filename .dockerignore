@@ -6,3 +6,12 @@ frontend/.vite/
 *.md
 .git/
 .gitignore
+
+# Test files - don't include in Docker builds
+frontend/src/test/
+backend/tests/
+**/*.test.tsx
+**/*.test.ts
+vitest.config.ts
+pytest.ini
+.pytest_cache/
