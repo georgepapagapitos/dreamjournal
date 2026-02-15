@@ -1,3 +1,5 @@
+import './MoodPicker.css'
+
 interface Mood {
   id: string
   label: string

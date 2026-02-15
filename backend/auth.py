@@ -1,10 +1,12 @@
-from datetime import datetime, timedelta
-from typing import Optional
-from jose import JWTError, jwt
-from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import os
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jwt.exceptions import InvalidTokenError as JWTError
+from passlib.context import CryptContext
 
 # Configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
@@ -26,9 +28,9 @@ def get_password_hash(password: str) -> str:
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
+        expire = datetime.now(timezone.utc) + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt

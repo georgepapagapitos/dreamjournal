@@ -1,0 +1,32 @@
+/* ─── Rating Picker ───────────────────────────────────────── */
+
+.rating-row {
+    display: flex;
+    gap: 8px;
+}
+
+.rating-btn {
+    flex: 1;
+    padding: 10px 4px;
+    background: rgba(var(--ink-soft-rgb), 0.4);
+    border: 1px solid rgba(var(--amber-rgb), 0.15);
+    border-radius: var(--radius-sm);
+    color: var(--ink-muted);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.rating-btn.active {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--cream);
+}
+
+.rating-btn:hover:not(.active) {
+    border-color: rgba(var(--amber-rgb), 0.4);
+    color: var(--amber-glow);
+}

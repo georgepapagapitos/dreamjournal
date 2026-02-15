@@ -1,9 +1,11 @@
-from fastapi import APIRouter, HTTPException, Depends, File, UploadFile
-from fastapi.responses import JSONResponse
-from datetime import datetime, timedelta
 import json
-from backend.database import get_db
+from datetime import datetime, timedelta, timezone
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi.responses import JSONResponse
+
 from backend.auth import get_current_user_id
+from backend.database import get_db
 from backend.utils import row_to_dict
 
 router = APIRouter(prefix="/api", tags=["stats"])
@@ -186,7 +188,7 @@ def backup_dreams(user_id: int = Depends(get_current_user_id)):
     dreams = [row_to_dict(r) for r in rows]
 
     backup = {
-        "export_date": datetime.utcnow().isoformat(),
+        "export_date": datetime.now(timezone.utc).isoformat(),
         "version": "1.0",
         "total_dreams": len(dreams),
         "dreams": dreams,
@@ -195,7 +197,7 @@ def backup_dreams(user_id: int = Depends(get_current_user_id)):
     return JSONResponse(
         content=backup,
         headers={
-            "Content-Disposition": f"attachment; filename=dream-journal-backup-{datetime.utcnow().strftime('%Y%m%d')}.json"
+            "Content-Disposition": f"attachment; filename=dream-journal-backup-{datetime.now(timezone.utc).strftime('%Y%m%d')}.json"
         },
     )
 
@@ -209,15 +211,18 @@ async def import_dreams(
         # Read and parse JSON
         content = await file.read()
         data = json.loads(content)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON file")
 
-        # Validate backup format
-        if not isinstance(data, dict) or "dreams" not in data:
-            raise HTTPException(status_code=400, detail="Invalid backup file format")
+    # Validate backup format (outside the try block so HTTPException isn't caught)
+    if not isinstance(data, dict) or "dreams" not in data:
+        raise HTTPException(status_code=400, detail="Invalid backup file format")
 
-        dreams_data = data["dreams"]
-        if not isinstance(dreams_data, list):
-            raise HTTPException(status_code=400, detail="Invalid backup file format")
+    dreams_data = data["dreams"]
+    if not isinstance(dreams_data, list):
+        raise HTTPException(status_code=400, detail="Invalid backup file format")
 
+    try:
         conn = get_db()
         imported = 0
         skipped = 0
@@ -252,8 +257,8 @@ async def import_dreams(
                             else json.dumps(dream.get("tags", []))
                         ),
                         dream.get("dream_date"),
-                        dream.get("created_at", datetime.utcnow().isoformat()),
-                        dream.get("updated_at", datetime.utcnow().isoformat()),
+                        dream.get("created_at", datetime.now(timezone.utc).isoformat()),
+                        dream.get("updated_at", datetime.now(timezone.utc).isoformat()),
                     ),
                 )
                 imported += 1
@@ -273,8 +278,6 @@ async def import_dreams(
             "total": len(dreams_data),
         }
 
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid JSON file")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
 

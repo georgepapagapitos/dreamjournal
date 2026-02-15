@@ -1,13 +1,16 @@
-from fastapi import APIRouter, HTTPException, Depends
-from datetime import datetime
-from backend.database import get_db
-from backend.models import UserRegister, UserLogin, PasswordChange, UsernameChange
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Depends, HTTPException
+
 from backend.auth import (
-    get_password_hash,
-    verify_password,
     create_access_token,
     get_current_user_id,
+    get_password_hash,
+    verify_password,
 )
+from backend.database import get_db
+from backend.models import PasswordChange, UserLogin, UsernameChange, UserRegister
+
 from ..utils import row_to_dict
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -54,7 +57,7 @@ def register(user: UserRegister):
 
     # Create user
     password_hash = get_password_hash(user.password)
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).isoformat()
 
     cursor = conn.execute(
         "INSERT INTO users (email, username, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
@@ -132,7 +135,7 @@ def change_password(data: PasswordChange, user_id: int = Depends(get_current_use
         )
 
     new_hash = get_password_hash(data.new_password)
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).isoformat()
 
     conn.execute(
         "UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?",
@@ -168,7 +171,7 @@ def change_username(data: UsernameChange, user_id: int = Depends(get_current_use
         conn.close()
         raise HTTPException(status_code=400, detail="Username already taken")
 
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).isoformat()
     conn.execute(
         "UPDATE users SET username = ?, updated_at = ? WHERE id = ?",
         (data.username, now, user_id),

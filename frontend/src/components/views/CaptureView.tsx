@@ -5,6 +5,7 @@ import type { Dream } from '../../types'
 import { MoodPicker } from '../ui/MoodPicker'
 import { RatingPicker } from '../ui/RatingPicker'
 import { TagInput } from '../ui/TagInput'
+import './CaptureView.css'
 
 const LUCIDITY_LABELS = ['Hazy', 'Dim', 'Clear', 'Vivid', 'Lucid']
 const SLEEP_LABELS = ['Poor', 'Fair', 'Good', 'Great', 'Deep']

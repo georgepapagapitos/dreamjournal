@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../../api/client'
 import type { Dream, Stats } from '../../types'
 import { getMood } from '../ui/MoodPicker'
+import './JournalView.css'
 
 dayjs.extend(relativeTime)
 

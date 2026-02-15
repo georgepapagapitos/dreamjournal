@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../../api/client'
 import type { Dream } from '../../types'
 import { getMood } from '../ui/MoodPicker'
+import './CalendarView.css'
 
 interface CalendarViewProps {
   onSelectDream: (dream: Dream) => void
@@ -13,6 +14,10 @@ interface DayData {
   dreams: Dream[]
   maxLucidity: number
 }
+
+const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
+const MAX_LUCIDITY = 5
+const PREVIEW_LENGTH = 80
 
 export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps) {
   const [dreams, setDreams] = useState<Dream[]>([])
@@ -36,21 +41,21 @@ export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps
 
   // Build a map: "YYYY-MM-DD" -> { dreams: [...], maxLucidity: N }
   const dreamsByDate: Record<string, DayData> = {}
-  dreams.forEach((d) => {
-    const dateKey = (d.dream_date || d.created_at).slice(0, 10)
+  dreams.forEach((dream) => {
+    const dateKey = (dream.dream_date || dream.created_at).slice(0, 10)
     if (!dreamsByDate[dateKey]) {
       dreamsByDate[dateKey] = { dreams: [], maxLucidity: 0 }
     }
-    dreamsByDate[dateKey].dreams.push(d)
-    if (d.lucidity && d.lucidity > dreamsByDate[dateKey].maxLucidity) {
-      dreamsByDate[dateKey].maxLucidity = d.lucidity
+    dreamsByDate[dateKey].dreams.push(dream)
+    if (dream.lucidity && dream.lucidity > dreamsByDate[dateKey].maxLucidity) {
+      dreamsByDate[dateKey].maxLucidity = dream.lucidity
     }
   })
 
   // Generate calendar grid for current month
   const startOfMonth = currentMonth.startOf('month')
   const endOfMonth = currentMonth.endOf('month')
-  const startDate = startOfMonth.startOf('week') // Start on Sunday
+  const startDate = startOfMonth.startOf('week')
   const endDate = endOfMonth.endOf('week')
 
   const calendar: dayjs.Dayjs[] = []
@@ -60,7 +65,7 @@ export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps
     day = day.add(1, 'day')
   }
 
-  // Chunk into weeks
+  // Chunk into weeks (7 days per week)
   const weeks: dayjs.Dayjs[][] = []
   for (let i = 0; i < calendar.length; i += 7) {
     weeks.push(calendar.slice(i, i + 7))
@@ -73,6 +78,7 @@ export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps
   const handleDayClick = (day: dayjs.Dayjs) => {
     const key = day.format('YYYY-MM-DD')
     setSelectedDate(key)
+    setIsClosing(false)
   }
 
   const handleClosePanel = () => {
@@ -81,6 +87,13 @@ export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps
       setSelectedDate(null)
       setIsClosing(false)
     }, 300)
+  }
+
+  const handleRecordForDate = () => {
+    if (selectedDate) {
+      handleClosePanel()
+      onRecordDream(selectedDate)
+    }
   }
 
   const selectedDreams = selectedDate ? dreamsByDate[selectedDate]?.dreams || [] : []
@@ -92,7 +105,8 @@ export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps
           <h1 className="page-title">Calendar</h1>
         </div>
         <div className="loading">
-          <div className="spinner" /> Loading…
+          <div className="spinner" />
+          Loading…
         </div>
       </div>
     )
@@ -110,38 +124,38 @@ export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps
       </div>
 
       {/* Month navigation */}
-      <div className="calendar-nav">
-        <button onClick={handlePrevMonth} className="calendar-nav__btn">
+      <nav className="calendar-nav">
+        <button onClick={handlePrevMonth} className="calendar-nav__btn" aria-label="Previous month">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
         <div className="calendar-nav__current">
           <h2 className="calendar-nav__month">{currentMonth.format('MMMM YYYY')}</h2>
-          <button onClick={handleToday} className="calendar-nav__today">Today</button>
+          <button onClick={handleToday} className="calendar-nav__today">
+            Today
+          </button>
         </div>
-        <button onClick={handleNextMonth} className="calendar-nav__btn">
+        <button onClick={handleNextMonth} className="calendar-nav__btn" aria-label="Next month">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="9 18 15 12 9 6" />
           </svg>
         </button>
-      </div>
+      </nav>
 
       {/* Calendar grid */}
       <div className="calendar-grid">
-        {/* Day headers */}
         <div className="calendar-header">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+          {DAYS_OF_WEEK.map((day) => (
             <div key={day} className="calendar-header__day">
               {day}
             </div>
           ))}
         </div>
 
-        {/* Weeks and days */}
         <div className="calendar-body">
-          {weeks.map((week, wIdx) => (
-            <div key={wIdx} className="calendar-week">
+          {weeks.map((week, weekIndex) => (
+            <div key={weekIndex} className="calendar-week">
               {week.map((day) => {
                 const key = day.format('YYYY-MM-DD')
                 const data = dreamsByDate[key]
@@ -150,12 +164,18 @@ export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps
                 const isSelected = selectedDate === key
                 const dreamCount = data?.dreams.length || 0
 
+                const classNames = [
+                  'calendar-day',
+                  !isCurrentMonth && 'calendar-day--other-month',
+                  isToday && 'calendar-day--today',
+                  isSelected && 'calendar-day--selected',
+                  data && 'calendar-day--has-dreams',
+                ].filter(Boolean).join(' ')
+
                 return (
                   <div
                     key={key}
-                    className={`calendar-day${!isCurrentMonth ? ' calendar-day--other-month' : ''}${isToday ? ' calendar-day--today' : ''
-                      }${isSelected ? ' calendar-day--selected' : ''}${data ? ' calendar-day--has-dreams' : ''
-                      }`}
+                    className={classNames}
                     onClick={() => handleDayClick(day)}
                   >
                     <div className="calendar-day__number">{day.date()}</div>
@@ -167,7 +187,9 @@ export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps
                           <div
                             className="calendar-day__dot"
                             style={{
-                              opacity: data.maxLucidity ? 0.4 + (data.maxLucidity / 5) * 0.6 : 0.6,
+                              opacity: data.maxLucidity
+                                ? 0.4 + (data.maxLucidity / MAX_LUCIDITY) * 0.6
+                                : 0.6,
                             }}
                           />
                         )}
@@ -190,15 +212,8 @@ export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps
               <h3 className="calendar-panel__title">
                 {dayjs(selectedDate).format('MMMM D, YYYY')}
               </h3>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  onClick={() => {
-                    handleClosePanel()
-                    onRecordDream(selectedDate!)
-                  }}
-                  className="btn btn--ghost"
-                  style={{ padding: '6px 12px', fontSize: '12px' }}
-                >
+              <div className="calendar-panel__actions">
+                <button onClick={handleRecordForDate} className="calendar-panel__record">
                   + Record
                 </button>
                 <button onClick={handleClosePanel} className="calendar-panel__close">
@@ -212,6 +227,9 @@ export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps
               <div className="calendar-panel__dreams">
                 {selectedDreams.map((dream) => {
                   const mood = getMood(dream.mood)
+                  const preview = dream.body.slice(0, PREVIEW_LENGTH)
+                  const needsEllipsis = dream.body.length > PREVIEW_LENGTH
+
                   return (
                     <div
                       key={dream.id}
@@ -222,8 +240,8 @@ export function CalendarView({ onSelectDream, onRecordDream }: CalendarViewProps
                         {dream.title || 'Untitled dream'}
                       </div>
                       <div className="calendar-dream-card__preview">
-                        {dream.body.slice(0, 80)}
-                        {dream.body.length > 80 ? '...' : ''}
+                        {preview}
+                        {needsEllipsis && '...'}
                       </div>
                       <div className="calendar-dream-card__meta">
                         {mood && (

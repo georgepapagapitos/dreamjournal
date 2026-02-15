@@ -3,6 +3,7 @@ import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, Res
 import { api } from '../../api/client'
 import type { DetailedStats } from '../../types'
 import { getMood } from '../ui/MoodPicker'
+import './StatsView.css'
 
 export function StatsView() {
     const [stats, setStats] = useState<DetailedStats | null>(null)

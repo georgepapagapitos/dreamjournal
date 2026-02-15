@@ -1,11 +1,13 @@
-from fastapi import APIRouter, HTTPException, Query, Depends
-from datetime import datetime
 import json
+from datetime import datetime, timezone
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from backend.auth import get_current_user_id
 from backend.database import get_db
 from backend.models import DreamCreate, DreamUpdate
-from backend.auth import get_current_user_id
 from backend.utils import row_to_dict
-from typing import Optional
 
 router = APIRouter(prefix="/api/dreams", tags=["dreams"])
 
@@ -56,8 +58,8 @@ def get_dream(dream_id: int, user_id: int = Depends(get_current_user_id)):
 @router.post("", status_code=201)
 def create_dream(dream: DreamCreate, user_id: int = Depends(get_current_user_id)):
     conn = get_db()
-    now = datetime.utcnow().isoformat()
-    dream_date = dream.dream_date or datetime.utcnow().strftime("%Y-%m-%d")
+    now = datetime.now(timezone.utc).isoformat()
+    dream_date = dream.dream_date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     cursor = conn.execute(
         """INSERT INTO dreams (user_id, title, body, mood, lucidity, sleep_quality, tags, dream_date, created_at, updated_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -106,7 +108,7 @@ def update_dream(
         return row_to_dict(existing)
 
     fields.append("updated_at = ?")
-    params.append(datetime.utcnow().isoformat())
+    params.append(datetime.now(timezone.utc).isoformat())
     params.append(dream_id)
     params.append(user_id)
 

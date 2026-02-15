@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { api } from '../../api/client'
 import type { Dream } from '../../types'
 import { getMood } from '../ui/MoodPicker'
+import './DetailView.css'
 
 const LUCIDITY_LABELS = ['Hazy', 'Dim', 'Clear', 'Vivid', 'Lucid']
 const SLEEP_LABELS = ['Poor', 'Fair', 'Good', 'Great', 'Deep']

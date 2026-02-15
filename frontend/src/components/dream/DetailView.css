@@ -1,0 +1,65 @@
+/* ─── Detail View ─────────────────────────────────────────── */
+
+.detail-view {
+    padding: 56px 20px 32px;
+    animation: fadeIn 0.25s ease;
+}
+
+.detail-view__back {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink-muted);
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 28px;
+    border: none;
+    background: none;
+    padding: 0;
+    transition: color var(--transition);
+}
+
+.detail-view__back:hover {
+    color: var(--amber-glow);
+}
+
+.detail-view__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 7vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    color: var(--parchment);
+}
+
+.detail-view__date {
+    font-size: 12px;
+    color: var(--ink-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.detail-view__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(var(--amber-rgb), 0.1);
+}
+
+.detail-view__body {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--parchment2);
+    white-space: pre-wrap;
+}
+
+.detail-view__actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 40px;
+}

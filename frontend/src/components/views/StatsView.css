@@ -1,0 +1,89 @@
+/* ─── Stats View ──────────────────────────────────────────── */
+.stats-view {
+    padding-bottom: 100px;
+}
+
+/* ─── Stats Grid ──────────────────────────────────────────── */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 0 16px 20px;
+}
+
+.stat-card {
+    background: rgba(var(--ink-soft-rgb), 0.4);
+    border: 1px solid rgba(var(--amber-rgb), 0.15);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.stat-card__value {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 300;
+    color: var(--amber-glow);
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.stat-card__label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+}
+
+/* ─── Chart Sections ──────────────────────────────────────── */
+.chart-section {
+    margin: 24px 16px;
+    padding: 24px;
+    background: rgba(var(--ink-soft-rgb), 0.3);
+    border: 1px solid rgba(var(--amber-rgb), 0.15);
+    border-radius: var(--radius-lg);
+}
+
+.chart-title {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--parchment);
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+}
+
+/* ─── Tag Cloud ───────────────────────────────────────────── */
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    padding: 20px;
+}
+
+.tag-cloud-item {
+    font-family: var(--font-display);
+    color: var(--amber-glow);
+    font-weight: 400;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+    cursor: default;
+}
+
+.tag-cloud-item:hover {
+    color: var(--amber);
+    transform: scale(1.05);
+}
+
+.tag-count {
+    font-size: 0.7em;
+    opacity: 0.6;
+    font-family: var(--font-body);
+}
+
+/* ─── Recharts Custom Styling ─────────────────────────────── */
+.recharts-tooltip-wrapper {
+    outline: none;
+}

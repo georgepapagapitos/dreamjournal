@@ -1,4 +1,5 @@
 import { KeyboardEvent, useState } from 'react'
+import './TagInput.css'
 
 interface TagInputProps {
   tags: string[]

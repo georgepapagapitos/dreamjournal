@@ -1,3 +1,5 @@
+import './RatingPicker.css'
+
 interface RatingPickerProps {
   value: number | null
   onChange: (value: number | null) => void

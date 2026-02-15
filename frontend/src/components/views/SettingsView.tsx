@@ -4,6 +4,7 @@ import { api } from '../../api/client'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { themes } from '../../themes'
+import './SettingsView.css'
 
 
 function ThemePicker() {
